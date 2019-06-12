@@ -2,8 +2,16 @@ import gzip
 import logging
 import os
 import re
-import urllib2
-import urlparse
+try:
+    from urllib2 import Request, build_opener, HTTPError
+except ImportError:
+    from urllib.request import Request, build_opener
+    from urllib.error import HTTPError
+try:
+    import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+
 try:
     import json
 except ImportError:
@@ -17,7 +25,10 @@ from heapq import heappush, heappop
 try:
     from cStringIO import StringIO
 except ImportError:
-    from StringIO import StringIO
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
 
 from django.conf import settings
 from django.utils.http import urlencode
@@ -37,10 +48,10 @@ def fetch(url, user_agent="django-oembed/0.1"):
     """
     Fetches from a URL, respecting GZip encoding, etc.
     """
-    request = urllib2.Request(url)
+    request = Request(url)
     request.add_header('User-Agent', user_agent)
     request.add_header('Accept-Encoding', 'gzip')
-    opener = urllib2.build_opener()
+    opener = build_opener()
     f = opener.open(request)
     result = f.read()
     if f.headers.get('content-encoding', '') == 'gzip':
@@ -235,7 +246,7 @@ def replace(text, max_width=None, max_height=None, template_dir='oembed'):
                 parts[id_to_replace] = part
             except KeyError:
                 parts[id_to_replace] = part
-            except urllib2.HTTPError:
+            except HTTPError:
                 parts[id_to_replace] = part
     # Combine the list into one string and return it.
     return mark_safe(u''.join(parts).replace('http://','//'))

@@ -1,14 +1,27 @@
-import urllib
-import HTMLParser
+try:
+    from urllib import unquote, unquote_plus
+except ImportError:
+    from urllib.parse import unquote, unquote_plus
+
+try:
+    import HTMLParser  # Python 2
+except ImportError:
+    from html.parser import HTMLParser  # Python 3
 
 import django
 from django import template
 from django.template.defaultfilters import stringfilter
-from django.utils.encoding import smart_str, force_unicode
+from django.utils.encoding import smart_str
+try:
+    from django.utils.encoding import force_unicode
+except ImportError:
+    def force_unicode(x): return x
+
 from oembed.core import replace
 from oembed.models import StoredOEmbed
 
 register = template.Library()
+
 
 @register.filter
 def unescape(text):
@@ -18,12 +31,12 @@ def unescape(text):
 
 @register.filter
 def urlunquote(quoted_url):
-    return force_unicode(urllib.unquote(smart_str(quoted_url)))
+    return force_unicode(unquote(smart_str(quoted_url)))
 
 
 @register.filter
 def urlunquote_plus(quoted_url):
-    return force_unicode(urllib.unquote_plus(smart_str(quoted_url)))
+    return force_unicode(unquote_plus(smart_str(quoted_url)))
 
 
 def oembed(input, args=None):
