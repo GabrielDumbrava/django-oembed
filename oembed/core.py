@@ -89,9 +89,9 @@ def re_parts(regex_list, text):
     matches = []
     
     # Bootstrap the search with the first hit for each iterator
-    for regex, iterator in iter_dict.items():
+    for regex, iterator in list(iter_dict.items()):
         try:
-            match = iterator.next()
+            match = iterator.__next__()
             heappush(matches, (match.start(), match))
         except StopIteration:
             iter_dict.pop(regex)
@@ -109,7 +109,7 @@ def re_parts(regex_list, text):
         # Get the next match from the iterator for this match
         if match.re in iter_dict:
             try:
-                newmatch = iter_dict[match.re].next()
+                newmatch = iter_dict[match.re].__next__()
                 heappush(matches, (newmatch.start(), newmatch))
             except StopIteration:
                 iter_dict.pop(match.re)
